@@ -1,0 +1,20 @@
+--- httpd.spec	2024-01-20 16:24:23.862374645 +0200
++++ httpd_patched	2024-01-20 16:33:03.955351864 +0200
+@@ -29,7 +29,7 @@
+ #ARCHIVESIZE:           64620
+ #ARCH:         x86_64
+ BuildArch:     x86_64
+-Name:          httpd
++Name:          httpd_exam
+ Version:       2.4.57
+ Release:       6.el9
+ License:       ASL 2.0 
+@@ -110,7 +110,7 @@
+ 
+ 
+ %post -p /bin/sh
+-
++sed -i 's/Listen 80/Listen 82/' /etc/httpd/conf/httpd.conf
+  
+ if [ $1 -eq 1 ] && [ -x "/usr/lib/systemd/systemd-update-helper" ]; then 
+     # Initial installation 
