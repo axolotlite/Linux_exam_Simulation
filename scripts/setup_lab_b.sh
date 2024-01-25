@@ -6,7 +6,7 @@ USER="farah"
 FILE_COUNT=10
 FILES=()
 #setup hostname
-echo $LAB_A_HOST > /etc/hostname
+echo $LAB_A_HOSTNAME > /etc/hostname
 #first we disable all the repos
 find /etc/yum.repos.d/ -type f -exec sed -i 's/enabled=1/enabled=0/' {} \;
 #setup hostname and adjacent hosts
@@ -20,7 +20,7 @@ do
         user=${SHARE_USERS[idx]}
         uid="$SHARE_IDS$idx"
         useradd -p $(openssl passwd redhat ) -u $uid -U -d $SHARE_DIR/$user -m $user
-        
+	rm -rf $SHARE_DIR
 done
 #create random files owned by a user for one of the exercises
 useradd -M $USER

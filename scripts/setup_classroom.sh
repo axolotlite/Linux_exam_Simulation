@@ -7,7 +7,7 @@ USERNAME="redhat"
 PASSWORD="password"
 
 #setup hostnames
-echo $HOST_CLASSROOM> /etc/hostname
+echo $CLASSROOM_HOSTNAME > /etc/hostname
 
 #package installation
 yum install -y $PACKAGES

@@ -1,16 +1,18 @@
 #!/bin/bash
 #these are the given data
+UTILITY_USER="utility"
 USERS=(harry natasha sarah temo)
 PRIMARYGROUPS=(harry natasha sarah)
 SECONDARY_GROUP_USERS=(harry natasha)
 SECONDARY_GROUP="admin"
 NOLOGIN=(sarah)
-UPASSWD=()
+UPASSWD=(harry natasha )
+DEFAULT_PASSWORD="password"
 #check if users have been created
 for user in ${USERS[@]}
 do
 #first check if user has been created
-	id "$user" &>/dev/null && echo user $user created && UPASSWD+=("$user") || echo user $user was not created
+	id "$user" &>/dev/null && echo user $user created || echo user $user was not created
 done
 #secondary group check
 for user in ${SECONDARY_GROUP_USERS[@]}
@@ -23,8 +25,9 @@ do
 	awk "/$user/ && /nologin/ {found=1} END {exit !found}" /etc/passwd && echo user $user has nologin shell || echo user $user has login shell
 done
 #check if users have passwords
-echo ${UPASSWD[@]}
 for user in ${UPASSWD[@]}
 do
-	passwd -S $user | grep locked &>/dev/null && echo $user has no password || echo $user has password
+#	echo $user
+	passwd -S $user | grep locked &>/dev/null && echo $user doesnt have a password && continue 
+	echo $DEFAULT_PASSWORD | sudo -u utility su - $user &> /dev/null && echo $user password was set correctly || echo $user password not configured correctly
 done

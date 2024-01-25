@@ -1,5 +1,6 @@
 #!/bin/bash
-DIR="var/tmp/"
+TARBALL="/root/test.tar.gz"
+
 #i'm unsure how to do this correctly, so for the mean time i'll do it simply
 
-tar -tf test.tar.gz | grep ".verification" && echo archive success || echo archive failure
+[[ -f $TARBALL ]] && tar -tf $TARBALL | grep ".verification" &> /dev/null && echo archive success || echo archive failure

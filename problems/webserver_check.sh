@@ -1,25 +1,19 @@
 #!/bin/bash
 
 #This script will check your selinux configuration of a custom httpd port.
-
+PORT=82
+PKG="httpd_exam"
+PORT_CONTEXT="http_port_t"
+SERVICE="httpd"
 #first, port configuration
-port=$(semanage port -l  |grep ^http_port_t | grep -wo 82)
-port_status=$(echo $?)
+semanage port -l  2>/dev/null |grep ^$PORT_CONTEXT | grep -wo $PORT &>/dev/null && echo port access given to httpd
+#check if port is open
+firewall-cmd --list-ports 2>/dev/null | grep -wo $PORT &>/dev/null && echo port configured through firewall || echo port not actively enabled in firewall
 #second we check if the httpd is installed
-httpd=$(rpm -q httpd)
-httpd_status=$(echo $?)
+rpm -q $PKG &>/dev/null && echo package installed || echo package not installed
 #check if httpd is enabled and active
-enabled=$(systemctl is-enabled httpd)
-enabled_status=$(echo $?)
-active=$(systemctl is-active httpd)
-active_status=$(echo $?)
+systemctl is-enabled &>/dev/null $SERVICE && echo $SERVICE is enabled || echo $SERVICE is not enabled
+systemctl is-active $SERVICE &>/dev/null && echo $SERVICE started || echo $SERVICE is not started
 #check if the content are available locally
-response=$(curl http://localhost:82/)
-if [[ $response == "success" ]] then;
-	response_status=0
-else
-	response_satus=1
-fi
-#finally check if it's available remotely
-ssh something
+curl http://localhost:82/ &> /dev/null && echo curl successful || echo curl failure
 
