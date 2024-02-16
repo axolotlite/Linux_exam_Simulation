@@ -1,1 +1,3 @@
 credentials/*
+environments/*.vars
+environments/hosts.env

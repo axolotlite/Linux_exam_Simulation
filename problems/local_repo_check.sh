@@ -6,7 +6,7 @@ REPOCOUNT: The number of repos created
 REPONAMES: A list of repo names to check for
 "
 #-
-#[ -n $REPONAME ] || REPONAME=$1
+REPONAME=${REPONAME:="local"}
 REPOCOUNT=${REPOCOUNT:=2}
 #-
 MOUNTPOINT=$(mount | awk '/iso/ {print $3}')
