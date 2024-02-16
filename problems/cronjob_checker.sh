@@ -1,9 +1,16 @@
 #!/bin/bash
 #this checks for cronjobs for users
 #Ive decided to place the users and jobs in the same array, 
-#
-USERS_JOBS=("harry:30 12 * * * /bin/echo 'hello';40 10 1 * * /bin/echo 'last'")
-#JOBS=('30 12 * * * /bin/echo "hello"')
+DESC="
+This problem checks for users and their jobs
+USER_JOBS:
+	You first specify the user, then his crontab options, the crontab options are seperated by a semi-colon
+	format:
+		user: * * * * * /bin/command 'string';* * * * * /bin/other_command 'string';etc...
+"
+#-
+USER_JOBS=${USER_JOBS:="harry:30 12 * * * /bin/echo 'hello';40 10 1 * * /bin/echo 'last'"}
+#-
 #rewritten with comments due to my fear if this getting too complex
 #
 match_time () {

@@ -1,13 +1,18 @@
 #!/bin/bash
 #these are the given data
-UTILITY_USER="utility"
-USERS=(harry natasha sarah temo)
-PRIMARYGROUPS=(harry natasha sarah)
-SECONDARY_GROUP_USERS=(harry natasha)
-SECONDARY_GROUP="admin"
-NOLOGIN=(sarah)
-UPASSWD=(harry natasha )
-DEFAULT_PASSWORD="password"
+DESC="
+
+"
+#-
+UTILITY_USER=${UTILITY_USER:="utility"}
+USERS=${USERS:="harry natasha sarah temo"}
+PRIMARYGROUPS=${PRIMARYGROUPS:="harry natasha sarah"}
+SECONDARY_GROUP_USERS=${SECONDARY_GROUP_USERS:="harry natasha"}
+SECONDARY_GROUP=${SECONDARY_GROUP:="admin"}
+NOLOGIN=${NOLOGIN:="sarah"}
+UPASSWD=${UPASSWD:="harry natasha"}
+DEFAULT_PASSWORD=${DEFAULT_PASSWORD:="password"}
+#-
 #check if users have been created
 for user in ${USERS[@]}
 do

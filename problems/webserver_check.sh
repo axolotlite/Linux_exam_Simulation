@@ -1,10 +1,12 @@
 #!/bin/bash
 
 #This script will check your selinux configuration of a custom httpd port.
-PORT=82
-PKG="httpd_exam"
-PORT_CONTEXT="http_port_t"
-SERVICE="httpd"
+#-
+PORT=${PORT:=82}
+PKG=${PKG:="httpd_exam"}
+PORT_CONTEXT=${PORT_CONTEXT:="http_port_t"}
+SERVICE=${SERVICE:="httpd"}
+#-
 #first, port configuration
 semanage port -l  2>/dev/null |grep ^$PORT_CONTEXT | grep -wo $PORT &>/dev/null && echo port access given to httpd
 #check if port is open

@@ -1,8 +1,11 @@
 #!/bin/bash
-#this file handles all the rest of the checks.
-
-#check the umask of user
-USER="natasha"
+DESC="
+check the umask of user
+USER: user to check the stuff for
+"
+#-
+USER=${USER:="natasha"}
+#-
 [[ $(sudo -u $USER -i umask) == 0277 ]] && echo umask set correctly || umask mistake
 
 #default password expiry date should be set to 20 days

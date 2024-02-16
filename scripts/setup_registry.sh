@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 #use as root
-#packages to be used
 USERNAMES=("redhat")
 PASSWORDS=("password")
 

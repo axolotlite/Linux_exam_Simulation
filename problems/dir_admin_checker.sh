@@ -1,8 +1,17 @@
 #!/bin/bash
-DIRECTORY="/common/admin"
-OWNER="admin"
-PERMISSION="^(2|6)770"
-#check if the directories have been created
+#
+DESC="
+This problem checks for the creation of a group owned directory with specific permissions
+DIRECTORY: The location of the directory
+OWNER: The group ownership name of the directory
+PERMISSION: The string or regex used to check for group ownership permissions
+"
+#-
+DIRECTORY=${DIRECTORY:="/common/admin"}
+OWNER=${OWNER:="admin"}
+PERMISSION=${PERMISSION:="^(2|6)770"}
+#-               O
+#check if the dirPectories have been created
 if [[ -d $DIRECTORY ]]; then
 	echo "it exists"
 	#check if the ownership is correct
