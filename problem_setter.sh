@@ -33,29 +33,36 @@ get_vars () {
 	done
 }
 set_host() {
-	HOST="environments/server_$1/"
-	mkdir $HOST
-	read -p "Hostname of host $1: " HOSTNAME
-	read -p "address of host $1: " ADDRESS
-	echo '#new host' >>environments/hosts.env
-	echo "HOSTNAME_$1=\"$HOSTNAME\"" >> environments/hosts.env
-	echo "ADDRESS_$1=\"$ADDRESS\"" >> environments/hosts.env
-	echo "HOST_$1=\"\$ADDRESS_$1 \$HOSTNAME_$1\"" >> environments/hosts.env
+	echo "How many hosts will you need?"
+	read -p "number of hosts: " host_count
+	for itr in $(seq $host_count)
+	do
+		HOST="environments/server_$itr/"
+		mkdir $HOST
+		read -p "Hostname of host $itr: " HOSTNAME
+		read -p "address of host $itr: " ADDRESS
+		echo '#new host' >>environments/hosts.env
+		echo "HOSTNAME_$itr=\"$HOSTNAME\"" >> environments/hosts.env
+		echo "ADDRESS_$itr=\"$ADDRESS\"" >> environments/hosts.env
+		echo "HOST_$itr=\"\$ADDRESS_$itr \$HOSTNAME_$itr\"" >> environments/hosts.env
+	done
 }
-echo "How many hosts will you need?"
-read -p "number of hosts: " host_count
-for host in $(seq $host_count)
-do
-	set_host $host
-done
+SERVER_COUNT="$(ls -d environments/server_* 2> /dev/null| wc -l)"
+if [[ $SERVER_COUNT == 0 ]]
+then
+	set_host
+else
+	echo "There is already $SERVER_COUNT preset server directories, skipping directory creation."
+fi
 #echo "these are the variables and their defaults values"
- OPTS="set add remove list quit"
+ OPTS="set add remove list clear quit"
  select opt in $OPTS
  do
  	echo "you chose ($REPLY)$opt"
  	case $opt in
 		"set")
 			echo "1)set the current host for these problems"
+			ls -d environments/server_* &> /dev/null || set_host 
 			select host in $(ls environments/*/ -d)
 			do
 				echo "host $host is now selected, please choose problems for this host"
@@ -69,16 +76,14 @@ done
  			do
  				echo "$problem is now selected"
  				get_vars problems/$problem
- 				PROBLEMS+=($problem)
  				break
  			done
  			;;
  		"remove")
  			echo "3)remove a problem"
- 			select problem in ${PROBLEMS[@]}
+			select problem in $(ls $HOST)
  			do
-				echo "removing problem $problem from $host"
- 				rm "$HOST/${problem%.*}.vars"
+ 				rm "$HOST/$problem"
  				break
  			done
  			;;
@@ -94,6 +99,12 @@ done
 				ls $HOST
 			fi
  			;;
+		"clear")
+			echo "5) clear the already existing problems"
+			rm -rf environments/server_*
+			echo "" > environments/hosts.env
+			echo "cleared..."
+			;;
  		"help")
  			;;
  		"quit")

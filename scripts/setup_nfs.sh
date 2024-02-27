@@ -3,11 +3,6 @@
 #
 PACKAGES="nfs-utils "
 SHARE_DIR="/user-homes"
-SHARE_USERS=( $(echo "production"{1..30}) )
-SHARE_IDS="300"
-DEFAULT_UMASK=$(umask)
-SHARE_UMASK="0027"
-DEFAULT_PASS="redhat"
 NETWORK="10.10.10.0/24"
 yum install -y nfs-utils
 
