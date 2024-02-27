@@ -4,11 +4,13 @@
 PROBLEMS=()
 HOST=""
 get_vars () {
-	IFS=$'\n' vars=($(awk '/#-/{flag=!flag; next} flag' $1))
-	DESC="$(awk '/DESC="/{flag=1;next} /"/ {flag=0} flag' $1)"
-	filename="$(awk -F/ '{print $NF}' <<< $1)"
-	filename="${filename%.*}.vars"
-	echo "#This is an automatically created file, modification may cause an error and are not persistent." > environments/$filename
+	location="$1/$2"
+	IFS=$'\n' vars=($(awk '/#-/{flag=!flag; next} flag' $location))
+	DESC="$(awk '/DESC="/{flag=1;next} /"/ {flag=0} flag' $location)"
+#	filename="$(awk -F/ '{print $NF}' <<< $1)"
+#	filename="${filename%.*}.vars"
+	filename="${2%.*}.vars"
+	echo "#This is an automatically created file, modification may cause an error and are not persistent." > $HOST/$1/$filename
 	echo "$DESC"
 	#echo "vars: ${vars[@]}"
 	for var in ${vars[@]}
@@ -26,31 +28,36 @@ get_vars () {
 			"n"|"no"|"N"|"NO")
 				;;
 		esac
-		echo "$a=$b" >> $HOST/$filename
+		echo "$a=$b" >> $HOST/$1/$filename
 		variables+=($a)
 		values+=($b)
 #		echo -e "a: $a \nb:$b"
 	done
 }
 set_host() {
+	itr="$1"
+	HOST="environments/server_$itr/"
+	mkdir -p $HOST/{scripts,problems}
+	read -p "Hostname of host $itr: " HOSTNAME
+	read -p "address of host $itr: " ADDRESS
+	echo '#new host' >> environments/hosts.env
+	echo "HOSTNAME_$itr=\"$HOSTNAME\"" >> environments/hosts.env
+	echo "ADDRESS_$itr=\"$ADDRESS\"" >> environments/hosts.env
+	echo "HOST_$itr=\"\$ADDRESS_$itr \$HOSTNAME_$itr\"" >> environments/hosts.env
+	echo $HOST
+}
+set_hosts() {
 	echo "How many hosts will you need?"
 	read -p "number of hosts: " host_count
 	for itr in $(seq $host_count)
 	do
-		HOST="environments/server_$itr/"
-		mkdir $HOST
-		read -p "Hostname of host $itr: " HOSTNAME
-		read -p "address of host $itr: " ADDRESS
-		echo '#new host' >>environments/hosts.env
-		echo "HOSTNAME_$itr=\"$HOSTNAME\"" >> environments/hosts.env
-		echo "ADDRESS_$itr=\"$ADDRESS\"" >> environments/hosts.env
-		echo "HOST_$itr=\"\$ADDRESS_$itr \$HOSTNAME_$itr\"" >> environments/hosts.env
+		set_host $itr
 	done
 }
 SERVER_COUNT="$(ls -d environments/server_* 2> /dev/null| wc -l)"
 if [[ $SERVER_COUNT == 0 ]]
 then
-	set_host
+	set_hosts
 else
 	echo "There is already $SERVER_COUNT preset server directories, skipping directory creation."
 fi
@@ -62,23 +69,39 @@ fi
  	case $opt in
 		"set")
 			echo "1)set the current host for these problems"
-			ls -d environments/server_* &> /dev/null || set_host 
-			select host in $(ls environments/*/ -d)
+			ls -d environments/server_* &> /dev/null || set_host 1
+			select opt in $(ls environments/*/ -d) "add host" "quit"
 			do
-				echo "host $host is now selected, please choose problems for this host"
-				HOST="$host"
-				break
+				case $opt in
+					"add host")
+						let count=$(ls environments/*/ -d | wc -l)+1
+						HOST=$(set_host $count)
+						;;
+					"quit")
+						break
+						;;
+					*)
+						echo "host $opt is now selected, please choose problems for this host"
+						HOST="$opt"
+						break
+						;;
+				esac
 			done
 			;;
  		"add")
- 			echo "2)add problems to the practice text"
- 			select problem in $(ls problems/)
- 			do
- 				echo "$problem is now selected"
- 				get_vars problems/$problem
- 				break
- 			done
- 			;;
+ 			echo "2)set variables to the practice environment"
+			select dir in problems scripts
+			do
+				echo "you can exit by selecting q"
+	 			select script in $(ls $dir/)
+	 			do
+					[[ $REPLY == "q" ]] && break
+	 				echo "$script is now selected"
+	 				get_vars $dir $script
+	 			done
+				break
+			done
+			;;
  		"remove")
  			echo "3)remove a problem"
 			select problem in $(ls $HOST)
@@ -89,15 +112,7 @@ fi
  			;;
  		"list")
  			echo "4) show selected hosts problem variables"
-			if [[ -z $HOST ]]
-			then
-				echo "Host not selected, please set a host before trying again"
-			elif [[ $(ls $HOST) == "" ]]
-			then
-				echo "no problems selected for host $HOST, please add some problems."
-			else
-				ls $HOST
-			fi
+				ls $HOST/{problems,scripts}
  			;;
 		"clear")
 			echo "5) clear the already existing problems"

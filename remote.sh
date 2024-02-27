@@ -8,9 +8,10 @@ CURRENT_ADDRESS="ADDRESS_1"
 USER="root"
 PUBKEY="credentials/utility.pub"
 PRIKEY="credentials/utility"
+HELP="you have 3 options:\ntransfer\twhich will transport the ssh public keys to the hosts in the hosts.env file, this should be run first\nsetup\t which will setup all the setup scripts you've added through var_setter\ngrade\twhich will run all the problem scripts you've added through var setter."
 let count=1
 transfer_credentials() {
-	address=$1
+	address="${!CURRENT_ADDRESS}"
 	echo "Transferring public ssh-key for user $USER at $address..."
 	ssh-copy-id -i $PUBKEY -f $USER@$address
 	if [[ $(ls credentials/certs/* &> /dev/null) ]]
@@ -20,9 +21,9 @@ transfer_credentials() {
 	fi
 }
 setup_host() {
-	number="$1"
+	number="$count"
 	var_dir="environments/server_$number/scripts"
-	address="$2"
+	address="${!CURRENT_ADDRESS}"
 	echo "setting up scripts for user $USER at $adddress..."
 	for varfile in $(ls $var_dir)
 	do
@@ -34,7 +35,8 @@ setup_host() {
 	done
 }
 grade_host() {
-	number="$1"
+	number="$count"
+	address="${!CURRENT_ADDRESS}"
 	var_dir="environments/server_$number/problems"
 	echo "grading ${!CURRENT_HOSTNAME}..."
 	for varfile in $(ls $var_dir)
@@ -42,10 +44,35 @@ grade_host() {
 		script="problems/${varfile%.*}.sh"
 		echo "problem... "
 		echo "$var_dir/$varfile" "$script" 
-		cat "$var_dir/$varfile" "$script" | ssh -i $PRIKEY $USER@${!CURRENT_ADDRESS} "bash -s "
+		cat "$var_dir/$varfile" "$script" | ssh -i $PRIKEY $USER@$address "bash -s "
 		read -p "press enter to move onto the next problem..." empy
 	done
 }
+help_func() {
+	echo -e $HELP
+	exit 1
+}
+while getopts ":tsg:" opt
+do
+	case $opt in
+		t)
+			opt_func=transfer_credentials
+			;;
+		s)
+			opt_func=setup_host
+			;;
+		g)
+			opt_func=grade_host
+			;;
+		?)
+			echo "pain"
+			opt_func=help_func
+			exit 1
+			;;
+	esac
+
+
+done
 while [[ -n ${!CURRENT_HOSTNAME} ]]
 do
 #	echo "$CURRENT_HOSTNAME:${!CURRENT_HOSTNAME}"
@@ -53,7 +80,7 @@ do
 #	echo "$CURRENT_HOST:${!CURRENT_HOST}"
 	#transfer_credentials ${!CURRENT_ADDRESS}
 	#setup_host $count ${!CURRENT_ADDRESS}
-	grade_host $count
+	$opt_func
 	((count++))
 	CURRENT_HOSTNAME="HOSTNAME_$count"
 	CURRENT_HOST="HOST_$count"
