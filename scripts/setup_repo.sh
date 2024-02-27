@@ -1,9 +1,11 @@
 #!/bin/bash
-#this is the script responsible for creating the custom repo and creating a custom httpd that uses port 82 instead of 80.
-WORKDIR="/root/.workdir"
-dnf config-manager --set-enabled crb
-dnf install epel-release epel-next-release -y
-dnf install createrepo httpd httpd-tools -y
+DESC="
+This script creates a repo by using the cdrom repo used by centos 9
+"
+#WORKDIR="/root/.workdir"
+#dnf config-manager --set-enabled crb
+#dnf install epel-release epel-next-release -y
+#dnf install createrepo httpd httpd-tools -y
 
 #download httpd
 systemctl enable --now httpd
@@ -11,10 +13,10 @@ systemctl enable --now httpd
 firewall-cmd --add-service=http --permanent
 firewall-cmd --reload
 
-mkdir -p $WORKDIR
-yumdownloader httpd --destdir=$WORKDIR
+#mkdir -p $WORKDIR
+#yumdownloader httpd --destdir=$WORKDIR
 #create the custom repo and default repos
-mkdir -p /var/www/html/custom/{Packages,repodata}
+#mkdir -p /var/www/html/custom/{Packages,repodata}
 mkdir -p /var/www/html/BaseOS/
 mkdir -p /var/www/html/AppStream/
 mkdir /.cdrom
@@ -28,6 +30,6 @@ mount --bind /.cdrom/AppStream /var/www/html/AppStream/
 #cp $WORKDIR/x86_64/httpd_exam-*.rpm /var/www/html/custom/Packages/
 #rm -rf $WORKDIR $HOME/rpmbuild
 #now we initialize our custom repo with the httpd_exam
-createrepo /var/www/html/custom/
+#createrepo /var/www/html/custom/
 #ensure selinux permissions are set correctly, for some reason they sometimes break.
 

@@ -1,8 +1,13 @@
 #!/bin/bash
 #
-#use as root
-USERNAMES=("redhat")
-PASSWORDS=("password")
+DESC="
+This sets up the Container Registry for the containerization question
+
+USERNAMES: an array of users
+PASSWORDS: a corresponding array of their passwords
+"
+USERNAMES=${USERNAMES:=("redhat")}
+PASSWORDS=${PASSWORDS:=("password")}
 
 #package installation
 yum install -y podman

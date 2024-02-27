@@ -1,11 +1,13 @@
 #!/bin/bash
 #This scripts sets up a custom httpd package that uses port 82 instead of 80
-WORKDIR="/root/.workdir"
-PACKAGE="httpd"
-CUST_PACKAGE="httpd_exam"
-CUST_SPEC="htpd_exam.spec"
-CUST_PATCH="httpd_exam.spec.patch"
-REPO_DIR="/var/www/html/custom/Packages"
+#-
+WORKDIR=${WORKDIR:="/root/.workdir"}
+PACKAGE=${PACKAGE:="httpd"}
+CUST_PACKAGE=${CUST_PACKAGE:="httpd_exam"}
+CUST_SPEC=${CUST_SPEC:="htpd_exam.spec"}
+CUST_PATCH=${CUST_PATCH:="httpd_exam.spec.patch"}
+REPO_DIR=${REPO_DIR:="/var/www/html/custom/Packages"}
+#-
 dnf config-manager --set-enabled crb
 dnf install epel-release epel-next-release -y
 dnf install yum-utils rpmrebuild -y

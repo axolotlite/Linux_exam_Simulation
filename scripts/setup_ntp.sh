@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/bn/bash
 #
-SHARE_DIR="/user-homes"
-DEFAULT_UMASK=$(umask)
-SHARE_UMASK="0027"
-DEFAULT_PASS="redhat"
-NETWORK="10.10.10.0/24"
+SHARE_DIR=${SHARE_DIR:="/user-homes"}
+SHARE_UMASK=${SHARE_UMASK:="0027"}
+DEFAULT_PASS=${DEFAULT_PASS:="redhat"}
+NETWORK=${NETWORK:="10.10.10.0/24"}
 #install the repository
 yum install -y nfs-utils
+DEFAULT_UMASK=$(umask)
 #create a directory
 mkdir $SHARE_DIR
 chown nobody:root $SHARE_DIR

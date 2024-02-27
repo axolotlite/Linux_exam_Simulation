@@ -1,11 +1,16 @@
 #!/bin/bash
-#This is a script that will setup nfs
-#
-PACKAGES="nfs-utils "
-SHARE_DIR="/user-homes"
-NETWORK="10.10.10.0/24"
-yum install -y nfs-utils
+DESC="
+This is a script that will setup nfs
 
+SHARE_DIR: the directory where the nfs will be hosted on
+NETWORK: the network subnet that should have access to this share
+"
+#-
+PACKAGES=${PACKAGES:="nfs-utils"}
+SHARE_DIR=${PACKAGES:="/user-homes"}
+NETWORK=${NETWORK:="10.10.10.0/24"}
+#-
+yum install -y nfs-utils
 #create users
 mkdir $SHARE_DIR
 chown nobody:root $SHARE_DIR

@@ -1,6 +1,10 @@
 #!/bin/bash
-#setup hosts file
-
-echo $HOST_CLASSROOM >> /etc/hosts
-echo $HOST_LAB_A >> /etc/hosts
-echo $HOST_LAB_B >> /etc/hosts
+#setup hosts file using hosts.env
+#-
+COUNT=${COUNT:=1}
+#-
+for num in $(seq 0 $COUNT)
+do
+	host="HOST_$num"
+	echo ${!host} >> /etc/hosts
+done
