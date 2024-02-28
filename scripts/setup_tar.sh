@@ -7,7 +7,8 @@ ARCHIVE_DIR: the location of the verification file, where the archive should inc
 "
 #-
 VERIFICATION_STRING=${VERIFICATION_STRING:="success"}
-ARCHIVE_DIR=${ARCHIVE_DIR:="/var/tmp/simple/directory/tree/.verification"}
+ARCHIVE_DIR=${ARCHIVE_DIR:="/var/tmp/simple/directory/tree"}
+ARCHIVE_FILE=${ARCHIVE_FILE:=".verification"}
 #-
 mkdir -p $ARCHIVE_DIR
-echo "$VERIFICATION_STRING" > $ARCHIVE_DIR
+echo "$VERIFICATION_STRING" > $ARCHIVE_DIR/$ARCHIVE_FILE

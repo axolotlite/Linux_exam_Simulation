@@ -6,4 +6,4 @@ SWAPINFO: this is the location of the previous size of the swap
 #-
 SWAPINFO=${SWAPINFO:="/root/.swapinfo"}
 #-
-free --mega | awk '/Swap/ {print $2}' >> $SWAPINFO
+free --mega | awk '/Swap/ {print $2}' > $SWAPINFO

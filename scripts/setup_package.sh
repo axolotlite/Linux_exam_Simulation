@@ -1,5 +1,7 @@
 #!/bin/bash
-#This scripts sets up a custom httpd package that uses port 82 instead of 80
+DESC="
+This scripts sets up a custom package and is in need of generalization and an external repo
+"
 #-
 WORKDIR=${WORKDIR:="/root/.workdir"}
 PACKAGE=${PACKAGE:="httpd"}
