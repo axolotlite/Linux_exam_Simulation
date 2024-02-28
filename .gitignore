@@ -2,3 +2,4 @@ credentials/*
 environments/*.vars
 environments/server_*/*
 environments/hosts.env
+archive/*.tar*
