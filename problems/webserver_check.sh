@@ -6,16 +6,46 @@ PORT=${PORT:=82}
 PKG=${PKG:="httpd_exam"}
 PORT_CONTEXT=${PORT_CONTEXT:="http_port_t"}
 SERVICE=${SERVICE:="httpd"}
+CURL_URL=${CURL_URL:="http://localhost:82/"}
 #-
 #first, port configuration
-semanage port -l  2>/dev/null |grep ^$PORT_CONTEXT | grep -wo $PORT &>/dev/null && echo port access given to httpd
+if [[ $(semanage port -l  2>/dev/null |grep ^$PORT_CONTEXT | grep -wo $PORT ) ]]
+then
+	echo "port $PORT access given to $SERVICE"
+else
+	echo "port $PORT access not given to $SERVICE"
+fi
 #check if port is open
-firewall-cmd --list-ports 2>/dev/null | grep -wo $PORT &>/dev/null && echo port configured through firewall || echo port not actively enabled in firewall
+if [[ $(firewall-cmd --list-ports 2>/dev/null | grep -wo $PORT ) ]]
+then
+	echo "port $PORT configured through firewall"
+else 
+	echo "port $PORT not actively enabled in firewall"
+fi
 #second we check if the httpd is installed
-rpm -q $PKG &>/dev/null && echo package installed || echo package not installed
+if [[ $(rpm -q $PKG ) ]]
+then
+	echo "package $PKG installed "
+else 
+	echo "package $PKG not installed"
+fi
 #check if httpd is enabled and active
-systemctl is-enabled &>/dev/null $SERVICE && echo $SERVICE is enabled || echo $SERVICE is not enabled
-systemctl is-active $SERVICE &>/dev/null && echo $SERVICE started || echo $SERVICE is not started
+if [[ $(systemctl is-enabled $SERVICE  ) ]]
+then
+       	echo "$SERVICE is enabled"
+else
+	echo "$SERVICE is not enabled"
+fi
+if [[ $(systemctl is-active  $SERVICE ) ]]
+then
+	echo "$SERVICE started"
+else
+	echo "$SERVICE is not started"
+fi
 #check if the content are available locally
-curl http://localhost:82/ &> /dev/null && echo curl successful || echo curl failure
-
+if [[ $(curl $CURL_URL ) ]]
+then
+       	echo "curl url $CURL_URL successful"
+else 
+	echo "curl url $CURL_URL failure"
+fi

@@ -97,7 +97,7 @@ interactive () {
 	 	echo "you chose ($REPLY)$opt"
 	 	case $opt in
 			"set")
-				echo "1)set the current host for these problems"
+				echo "$REPLY) set the current host for these problems"
 				echo "There are currently $(get_hosts) hosts setup"
 #				(( $(get_hosts) )) || set_host 1
 				select opt in $(ls environments/*/ -d 2> /dev/null) "add host" "quit"
@@ -120,7 +120,7 @@ interactive () {
 				done
 				;;
 	 		"add")
-	 			echo "2)set variables to the practice environment"
+	 			echo "$REPLY) set variables to the practice environment"
 				select dir in problems scripts
 				do
 					echo "you can exit by selecting q"
@@ -134,7 +134,7 @@ interactive () {
 				done
 				;;
 	 		"remove")
-	 			echo "3)remove a problem"
+	 			echo "$REPLY) remove a problem"
 				select problem in $(ls $HOST)
 	 			do
 	 				rm "$HOST/$problem"
@@ -142,15 +142,15 @@ interactive () {
 	 			done
 	 			;;
 	 		"list")
-	 			echo "4) show selected hosts problem variables"
+	 			echo "$REPLY) show selected hosts problem variables"
 					ls $HOST/{problems,scripts}
 	 			;;
 			"archive")
-				echo ")archive the current exam with all its parameters and variables"
+				echo "$REPLY) archive the current exam with all its parameters and variables"
 				archive_exam
 				;;
 			"restore")
-				echo ") restores an exam with all its data"
+				echo "$REPLY) restores an exam with all its data"
 				let count=$(get_hosts)
 				if (( count )) 
 				then
@@ -170,7 +170,7 @@ interactive () {
 				restore_exam
 				;;
 			"clear")
-				echo "5) clear the already existing problems"
+				echo "$REPLY) clear the already existing problems"
 				clear_env
 				;;
 	 		"help")
@@ -179,6 +179,9 @@ interactive () {
 	 			echo "exiting..."
 	 			exit 0
 	 			;;
+			*)
+				echo "$REPLY option unavailable"
+				;;
 	 	esac
 	 done
  }

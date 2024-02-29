@@ -17,22 +17,47 @@ DEFAULT_PASSWORD=${DEFAULT_PASSWORD:="password"}
 for user in ${USERS[@]}
 do
 #first check if user has been created
-	id "$user" &>/dev/null && echo user $user created || echo user $user was not created
+	if [[ $(id "$user" ) ]] 
+	then
+		echo "user $user created"
+	else
+		echo "user $user was not created"
+	fi
 done
 #secondary group check
 for user in ${SECONDARY_GROUP_USERS[@]}
 do
-	id -nG $user | grep $SECONDARY_GROUP &> /dev/null && echo $user in secondary group $SECONDARY_GROUP || echo $user is not in secondary group $SECONDARY_GROUP
+	if [[ $(id -nG $user | grep $SECONDARY_GROUP ) ]]
+	then
+	       	echo "$user in secondary group $SECONDARY_GROUP"
+	else
+		echo "$user is not in secondary group $SECONDARY_GROUP"
+	fi
 done
 #check nologin users
 for user in ${NOLOGIN[@]}
 do
-	awk "/$user/ && /nologin/ {found=1} END {exit !found}" /etc/passwd && echo user $user has nologin shell || echo user $user has login shell
+	#if [[ $(awk "/$user/ && /nologin/ {found=1} END {exit !found}" /etc/passwd) ]]
+	if [[ $(grep "$user" /etc/passwd | grep "nologin") ]]
+	then
+		echo "user $user has nologin shell"
+	else
+		echo "user $user has login shell"
+	fi
 done
 #check if users have passwords
 for user in ${UPASSWD[@]}
 do
 #	echo $user
-	passwd -S $user | grep locked &>/dev/null && echo $user doesnt have a password && continue 
-	echo $DEFAULT_PASSWORD | sudo -u utility su - $user &> /dev/null && echo $user password was set correctly || echo $user password not configured correctly
+	if [[ $(passwd -S $user | grep locked ) ]] 
+	then
+		echo "$user doesnt have a password"
+		continue
+	fi
+	if [[ $(echo $DEFAULT_PASSWORD | sudo -u utility su - $user ) ]]
+	then
+		echo "$user password was set correctly"
+	else
+		echo "$user password not configured correctly"
+	fi
 done

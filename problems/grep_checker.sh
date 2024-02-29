@@ -10,4 +10,9 @@ FILE=${FILE:="$HOME/search.txt"}
 CONTENT=${CONTENT:="home"}
 #-
 #this checks the content of a grep
-cat /root/search.txt | grep $CONTENT &> /dev/null && echo success || echo fail
+if [[ $(cat $FILE | grep $CONTENT ) ]] 
+then
+	echo "substring $CONTENT was found in $FILE"
+else
+	echo "substring $CONTENT was not found in $FILE"
+fi

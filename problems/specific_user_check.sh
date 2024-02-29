@@ -9,4 +9,9 @@ USERID: the id of the created user
 USER=${USER:="alies"}
 USERID=${USERID:=1326}
 #-
-[[ $(id -u $USER) == $USERID ]] && echo $USER created with correct uid || echo user not created up to specifications
+if [[ $(id -u $USER) == $USERID ]]
+then
+	echo "$USER created with correct uid"
+else
+	echo "user not created up to specifications"
+fi

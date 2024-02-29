@@ -1,6 +1,7 @@
 #!/bin/bash
 #this checks for cronjobs for users
 #Ive decided to place the users and jobs in the same array, 
+#This will probably need to be further abstracted to allow more users, but it's prefferable to just leave it for when i migrate to ansible
 DESC="
 This problem checks for users and their jobs
 USER_JOBS:
@@ -16,12 +17,38 @@ USER_JOBS=${USER_JOBS:="harry:30 12 * * * /bin/echo 'hello';40 10 1 * * /bin/ech
 match_time () {
 	IFS=" " read -r min1 hr1 day1 mon1 week1 <<< "$1"
 	IFS=" " read -r min2 hr2 day2 mon2 week2 <<< "$2"
+	echo "comparing"
 	#comparison time
-	[[ $min1 == $min2 ]] && echo "min correctly set" || echo "min set incorrectly" && return 
-	[[ $hr1 == $hr2 ]] && echo "hours correctly set" || echo "hours set incorrectly" && return 
-	[[ $day1 == $day2 ]] && echo "day correctly set" || echo "day set incorrectly" && return 
-	[[ $mon1 == $mon2 ]] && echo "month correctly set" || echo "month set incorrectly" && return 
-	[[ $week1 == $week2 ]] && echo "week correctly set" || echo "week set incorrectly" && return 
+	if [[ $min1 == $min2 ]] 
+	then
+		echo "min correctly set" 
+	else
+		echo "min set incorrectly"
+	fi
+	if [[ $hr1 == $hr2 ]] 
+	then
+		echo "hours correctly set" 
+	else
+		echo "hours set incorrectly"
+	fi
+	if [[ $day1 == $day2 ]] 
+	then
+		echo "day correctly set" 
+	else
+		echo "day set incorrectly"
+	fi
+	if [[ $mon1 == $mon2 ]] 
+	then
+		echo "month correctly set" 
+	else
+		echo "month set incorrectly"
+	fi
+	if [[ $week1 == $week2 ]] 
+	then
+		echo "week correctly set" 
+	else
+		echo "week set incorrectly"
+	fi
 }
 match_job () {
 #this may not actually work, as the user implementation may be different
@@ -31,12 +58,17 @@ match_job () {
 #match the output of the function
 	out1=$(eval $1)
 	out2=$(eval $2)
-	[[ $out1 == $out2 ]] && echo "script output correctly" || echo -e "script output faulty.\nout1: $out1\nout2: $out2"
+	if [[ $out1 == $out2 ]]
+	then
+		echo "script output correctly" 
+	else
+		echo -e "script output faulty.\nout1: $out1\nout2: $out2"
+	fi
 }
 #first, we iterate through the users we're supposed to test their crontabs
-for element in "${USERS_JOBS[@]}"
+for element in "${USER_JOBS[@]}"
 do
-#	echo "$element"
+	echo "$element"
 	#get this users jobs using newline as a delimeter for the arrays element
 	IFS=: read -r user job_list <<< "$element"
 	IFS=$'\n' user_jobs=($(crontab -u $user -l))

@@ -15,5 +15,10 @@ FILE_VERIFICATION=${FILE_VERIFICATION:=".verification"}
 if [[ $(mount | grep $SHARE_DIR) ]] 
 then
 	echo share directory mounted
-	sudo -u production5 cat $SHARE_DIR/$USER/.verification &>/dev/null && echo user mounted successfully
+	if [[ $(sudo -u production5 cat $SHARE_DIR/$USER/.verification ) ]]
+	then
+       		echo "user mounted successfully"
+	else
+		echo "user mounted incorrectly"
+	fi
 fi

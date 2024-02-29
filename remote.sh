@@ -8,7 +8,6 @@ CURRENT_ADDRESS="ADDRESS_1"
 USER="root"
 PUBKEY="credentials/utility.pub"
 PRIKEY="credentials/utility"
-HELP="you have 3 options:\ntransfer\twhich will transport the ssh public keys to the hosts in the hosts.env file, this should be run first\nsetup\t which will setup all the setup scripts you've added through var_setter\ngrade\twhich will run all the problem scripts you've added through var setter."
 DEBUG=false
 let count=1
 transfer_credentials() {
@@ -43,16 +42,19 @@ grade_host() {
 	for varfile in $(ls $var_dir)
 	do
 		script="problems/${varfile%.*}.sh"
-		echo "problem... "
-		echo "$var_dir/$varfile" "$script" 
+		echo "executing $script..." 
+		[[ $DEBUG == "true" ]] && read -p "press enter to continue executing $script... " empy
 		cat "$var_dir/$varfile" "$script" | ssh -i $PRIKEY $USER@$address "bash -s "
-		read -p "press enter to move onto the next problem..." empy
 	done
 }
 help_func() {
-	
-	echo -e $HELP
-	exit 1
+	echo "This is the script responsible for executing the script on the remote hosts, these are the parameters"
+	echo ""
+	echo "-t		transfer credentials to the user directories"
+	echo "-s		execute the setup scripts in each host"
+	echo "-g		execute the grading scripts and print the output"
+	echo "-v		verbose, is still in implementation"
+	echo "-h		print the usage/help text, like this"
 }
 while getopts "tsghv" opt
 do
@@ -72,7 +74,6 @@ do
 		h)
 
 			help_func
-			exit 1
 			;;
 		*)
 			help_func

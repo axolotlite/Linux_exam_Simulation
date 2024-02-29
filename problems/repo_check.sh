@@ -16,11 +16,23 @@ VERIFICATION_PKG=${VERIFICATION_PKG:="httpd_exam"}
 
 baseurls=($(yum repolist -v 2> /dev/null | grep -oP 'http://\K\S+'))
 #check if the repos have been configured correctly
-if [[ $(echo ${baseurls[@]} ${BASEURLS[@]} | tr ' ' '\n' | sort | uniq -u) == "" ]]; then
+repos=$(echo ${baseurls[@]} ${BASEURLS[@]} | tr ' ' '\n' | sort | uniq -u)
+if [[ $repos == "" ]]; then
 	echo repos configured correctly 
-	yum search $VERIFICATION_PKG 2> /dev/null | grep $VERIFICATION_PKG &>/dev/null && echo custom packages reachable || echo custom packages unreachable
+	if [[ $(yum search $VERIFICATION_PKG 2> /dev/null | grep $VERIFICATION_PKG ) ]]
+	then
+		echo "custom packages reachable"
+	else 
+		echo "custom packages unreachable"
+	fi
 else
-	echo repos are not configured correctly 
+	echo "Not all repos were configured correctly"
+	echo "These repos were not configured:"
+	for repo in $repos
+	do
+		echo -e "\t- $repo"
+	done
+
 	exit 1
 fi
 

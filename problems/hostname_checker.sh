@@ -7,4 +7,9 @@ HOSTNAME: the hostname the user should've set
 HOSTNAME=${HOSTNAME:="khaldoom"}
 #-
 
-[[ $(hostname) =~ "$HOSTNAME" ]] && echo "hostname set correctly" || echo "hostname set incorrectly"
+if [[ $(hostname) =~ "$HOSTNAME" ]] 
+then
+	echo "hostname set correctly" 
+else
+	echo "hostname set incorrectly"
+fi

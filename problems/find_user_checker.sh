@@ -7,7 +7,7 @@ FIND_DIR: The directory the user is instructed to copy those files to
 "
 #-
 FILE=${FILE:="$HOME/.filenames"}
-FIND_DIR=${FIND_DIR:="$HOME/.find.user"}
+FIND_DIR=${FIND_DIR:="$HOME/find.user"}
 #-
 TOTAL=$(cat $FILE | wc -l)
 COUNT=0

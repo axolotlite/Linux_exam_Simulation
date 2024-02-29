@@ -10,9 +10,22 @@ REPONAME=${REPONAME:="local"}
 REPOCOUNT=${REPOCOUNT:=2}
 #-
 MOUNTPOINT=$(mount | awk '/iso/ {print $3}')
-[[ -z $MOUNTPOINT ]] && (echo "iso has not been mounted" && exit 1)
+if [[ -z $MOUNTPOINT ]] 
+then
+	echo "iso has not been mounted"
+	exit 1
+fi
 #next check if a local repo has been configured
 REPOS=($(awk -F '//' '/baseurl=file:\/\// {print $2}' /etc/yum.repos.d/*))
-[[ -z ${REPOS[@]} ]] && (echo "custom repo has not been configured correctly" && exit 1)
+if [[ -z ${REPOS[@]} ]] 
+then
+	echo "custom repo has not been configured correctly"
+	exit 1
+fi
 #try to see if packages are accessible
-yum --disablerepo="baseos appstream" list &> /dev/null && echo repo configured correctly || echo repo configured incorrectly
+if [[ $(yum --disablerepo="baseos appstream" list ) ]]
+then	
+	echo repo configured correctly 
+else
+	echo repo configured incorrectly
+fi

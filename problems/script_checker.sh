@@ -9,12 +9,17 @@ RUN: a custom script to save the output for comparing between user output this i
 VERIFICATION_DIR=${VERIFICATION_DIR:="/root/.myfiles"}
 CHECK_DIR=${CHECK_DIR:="/root/myfiles"}
 RUN=${RUN:="find /usr/share/ -type f -size -1M -exec cp {} $VERIFICATION_DIR \;"}
+SCRIPT=${SCRIPT:="/usr/local/bin/mysearch.sh"}
 #-
-mkdir $CHECK_DIR
+mkdir $VERIFICATION_DIR 2> /dev/null
 #RUN=$
 $RUN
-SCRIPT="/usr/local/bin/mysearch.sh"
 #run the script
 bash -exec $SCRIPT
 #check if both outputs are the same
-diff -qr $VERIFICATION_DIR $CHECK_DIR && echo script executed successfully || echo script failed
+if [[ $(diff -qr $VERIFICATION_DIR $CHECK_DIR) ]]
+then
+	echo "script executed successfully"
+else 
+	echo "script execution failed"
+fi

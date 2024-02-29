@@ -17,14 +17,38 @@ EXTENT_SIZE=${EXTENT_SIZE:="8.00"}
 MOUNT_POINT=${MOUNT_POINT:="/mnt/database"}
 #-
 #check if the volume group has been created
-vgdisplay $VGNAME &> /dev/null && echo volume $VGNAME group created successfully || echo volume group $VGNAME was not created successfully
+if [[ $(vgdisplay $VGNAME ) ]]
+then 
+	echo "volume $VGNAME group created successfully"
+else 
+	echo "volume group $VGNAME was not created successfully"
+fi
 #check if the logical volume was created
-lvdisplay $VGNAME/$LVNAME &> /dev/null && echo logical volume $LVNAME created successfully || echo logical volume $LVNAME was not created successfully
+if [[ $(lvdisplay $VGNAME/$LVNAME ) ]] 
+then
+	echo "logical volume $LVNAME created successfully"
+else
+	echo "logical volume $LVNAME was not created successfully"
+fi
 #check the number of extents
-(( $(lvdisplay $VGNAME/$LVNAME | awk '/Current LE/ {print $3}') >= $EXTENT_NUM )) &> /dev/null && echo logical volume $LVNAME has $EXTENT_NUM or more extents || echo logical volume does not have $EXTENT_NUM extents
+if (( $(lvdisplay $VGNAME/$LVNAME | awk '/Current LE/ {print $3}') >= $EXTENT_NUM ))
+then	
+	echo "logical volume $LVNAME has $EXTENT_NUM or more extents"
+else 
+	echo "logical volume does not have $EXTENT_NUM extents"
+fi
 #check the filetype of the logical volume
-[[ $( lsblk -o NAME,FSTYPE  | awk -v lv=$LVNAME '$0 ~lv {print $NF}') == $FSTYPE ]] && echo filesystem created correctly || echo filesystem is wrong
+if [[ $( lsblk -o NAME,FSTYPE  | awk -v lv=$LVNAME '$0 ~lv {print $NF}') == $FSTYPE ]] 
+then
+	echo "filesystem created correctly"
+else 
+	echo "filesystem is wrong"
+fi
 #check lv extent size
-[[ $(vgdisplay -Cv $VGNAME --nosuffix --units m | awk -v vg=$VGNAME '$0 ~ vg {print $3}') == $EXTENT_SIZE ]] && echo extent size allocated correctly || echo extent size incorrect
+if [[ $(vgdisplay -Cv $VGNAME --nosuffix --units m | awk -v vg=$VGNAME '$0 ~ vg {print $3}') == $EXTENT_SIZE ]]
+then
+	echo "extent size allocated correctly"
+else 
+	echo "extent size incorrect"
+fi
 #finally check if everything was added correctly to the fstab file
-#not sure how and i dont care anymore

@@ -9,15 +9,25 @@ PERMISSION: The string or regex used to check for group ownership permissions
 #-
 DIRECTORY=${DIRECTORY:="/common/admin"}
 OWNER=${OWNER:="admin"}
-PERMISSION=${PERMISSION:="^(2|6)770"}
+PERMISSION=${PERMISSION:="^(2|6)(0|7)70"}
 #-               O
 #check if the dirPectories have been created
 if [[ -d $DIRECTORY ]]; then
 	echo "it exists"
 	#check if the ownership is correct
-	[[ $(stat -c "%G" $DIRECTORY) == $OWNER ]] && echo "correct owner: $OWNER"
+	if [[ $(stat -c "%G" $DIRECTORY) == $OWNER ]]
+	then
+		echo "correct owner: $OWNER"
+	else
+		echo "owner $(stat -c "%G" $DIRECTORY) is not $OWNER"
+	fi
 	#check if it's the right permission, whether you applied the sticky to user or not is irrelevant
-	[[ $(stat -c '%a' $DIRECTORY ) =~ $PERMISSION ]] && echo "correct permissions set: $PERMISSION"
+	if [[ $(stat -c '%a' $DIRECTORY ) =~ $PERMISSION ]] 
+	then
+		echo "correct permissions set: $PERMISSION"
+	else
+		echo "permissions are incorrectly set"
+	fi
 else
 	echo "/common/admin not found"
 fi

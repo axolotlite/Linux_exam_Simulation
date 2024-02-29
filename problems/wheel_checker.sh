@@ -1,9 +1,26 @@
 #!/bin/bash
-#this checks if the wheel group has been enabled or not
+#this checks if the wheel group has been enabled or not, this may be further segmented
 #-
 USER=${USER:="ahmed"}
+GROUP=${GROUP:="wheel"}
 #-
 #check if user exists
-id $USER &> /dev/null || ( echo "user $USER doesnt exist, exiting..." && exit 1 )
-groups $USER | grep wheel &> /dev/null && echo "$USER is in wheel group" || echo "$USER is not in wheel group"
-grep '^%wheel' /etc/sudoers &> /dev/null && echo "wheel setup correctly" || echo "wheel incorrectly set"
+if [[ $(id $USER ) ]] 
+then
+	echo "use $USER was created successfully"
+else
+       	echo "user $USER doesnt exist, exiting..." 
+	exit 1
+fi
+if [[ $(groups $USER | grep wheel ) ]]
+then
+	echo "$USER is in $GROUP group"
+else
+	echo "$USER is not in $GROUP group"
+fi
+if [[ $(grep "^%$GROUP" /etc/sudoers ) ]]
+then
+       	echo "$GROUP group setup correctly" 
+else
+	echo "$GROUP incorrectly set"
+fi
