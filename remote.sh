@@ -14,6 +14,12 @@ CCOUNT=true
 let count=1
 transfer_credentials() {
 	address="${!CURRENT_ADDRESS}"
+	if [[ -f $PUBKEY ]]
+	then
+		cd credentials
+		./generate_keys/.sh
+		cd ..
+	fi
 	echo "Transferring public ssh-key for user $USER at $address..."
 	ssh-copy-id -i $PUBKEY -f $USER@$address
 	if [[ $(ls credentials/certs/* &> /dev/null) ]]

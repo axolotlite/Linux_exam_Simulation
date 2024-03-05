@@ -54,10 +54,12 @@ do
 		echo "$user doesnt have a password"
 		continue
 	fi
-	if [[ $(echo $DEFAULT_PASSWORD | sudo -u utility su - $user ) ]]
+	useradd -M $UTILITY_USER &> /dev/null
+	if [[ $(echo $DEFAULT_PASSWORD | sudo -u $UTILITY_USER su - $user ) ]]
 	then
 		echo "$user password was set correctly"
 	else
 		echo "$user password not configured correctly"
 	fi
+	userdel $UTILITY_USER &> /dev/null
 done

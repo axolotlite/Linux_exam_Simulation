@@ -2,7 +2,8 @@
 #This script gets the environment variables from the problems and helps you set them.
 #
 PROBLEMS=()
-HOST=""
+DEF_HOST="(no host selected)"
+HOST="(no host selected)"
 get_vars () {
 	location="$1/$2"
 	IFS=$'\n' vars=($(awk '/#-/{flag=!flag; next} flag' $location))
@@ -83,8 +84,9 @@ restore_exam(){
 	done
 }
 interactive () {
+	PS3="$HOST main> "
 	SERVER_COUNT=$(get_hosts)
-	OPTS="set add remove list archive restore clear quit"
+	OPTS="host add remove list archive restore clear quit"
 	if [[ $SERVER_COUNT == 0 ]]
 	then
 		set_hosts
@@ -96,10 +98,10 @@ interactive () {
 	 do
 	 	echo "you chose ($REPLY)$opt"
 	 	case $opt in
-			"set")
+			"host")
+				PS3="$HOST host> "
 				echo "$REPLY) set the current host for these problems"
 				echo "There are currently $(get_hosts) hosts setup"
-#				(( $(get_hosts) )) || set_host 1
 				select opt in $(ls environments/*/ -d 2> /dev/null) "add host" "quit"
 				do
 					case $opt in
@@ -111,19 +113,26 @@ interactive () {
 						"quit")
 							break
 							;;
-						*)
+						*[0-9]*)
 							echo "host $opt is now selected, please choose problems for this host"
 							HOST="$opt"
+							echo $HOST
 							break
 							;;
+						*)
+							echo "option $opt unavailable."
 					esac
 				done
 				;;
 	 		"add")
 	 			echo "$REPLY) set variables to the practice environment"
+				echo "you can exit by selecting q"
+				PS3="$HOST add> "
 				select dir in problems scripts
 				do
 					echo "you can exit by selecting q"
+					[[ $REPLY == "q" ]] && break
+					PS3="$HOST add $dir> "
 		 			select script in $(ls $dir/)
 		 			do
 						[[ $REPLY == "q" ]] && break
@@ -134,12 +143,24 @@ interactive () {
 				done
 				;;
 	 		"remove")
+				PS3="$HOST remove> "
 	 			echo "$REPLY) remove a problem"
-				select problem in $(ls $HOST)
-	 			do
-	 				rm "$HOST/$problem"
-	 				break
-	 			done
+				echo "you can exit by selecting q"
+				PS3="$HOST remove> "
+				select dir in problems scripts
+				do
+					echo "you can exit by selecting q"
+					[[ $REPLY == "q" ]] && break
+					PS3="$HOST remove $dir> "
+		 			select script in $(ls $HOST/$dir/)
+		 			do
+						[[ $REPLY == "q" ]] && break
+		 				echo "$script has been deleted."
+		 				rm "$HOST/$dir/$script"
+						break
+		 			done
+					break
+				done
 	 			;;
 	 		"list")
 	 			echo "$REPLY) show selected hosts problem variables"
@@ -167,6 +188,7 @@ interactive () {
 							;;
 					esac
 				fi
+				PS3="$HOST restore> "
 				restore_exam
 				;;
 			"clear")
@@ -183,6 +205,7 @@ interactive () {
 				echo "$REPLY option unavailable"
 				;;
 	 	esac
+	 PS3="$HOST main>"
 	 done
  }
 #short_options="s:a:r:m:l:c:h"
@@ -216,4 +239,23 @@ interactive () {
 #			 ;;
 #	esac
 # done
+if [[ $(ls -d environments/*/) ]]
+then
+	select opt in $(ls environments/*/ -d 2> /dev/null)
+	do
+		case $opt in
+			*[1-9]*)
+				HOST="$opt"
+				break
+				;;
+			'q')
+				echo "exiting..."
+				exit 0
+				;;
+			*)
+				echo "$opt invalid option"
+				;;
+		esac
+	done
+fi
 interactive
