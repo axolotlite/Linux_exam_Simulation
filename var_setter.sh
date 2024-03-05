@@ -84,7 +84,6 @@ restore_exam(){
 	done
 }
 interactive () {
-	PS3="$HOST main> "
 	SERVER_COUNT=$(get_hosts)
 	OPTS="host add remove list archive restore clear quit"
 	if [[ $SERVER_COUNT == 0 ]]
@@ -94,6 +93,7 @@ interactive () {
 		echo "There is already $SERVER_COUNT preset server directories, skipping directory creation."
 	fi
 	#echo "these are the variables and their defaults values"
+	PS3="$HOST main> "
 	select opt in $OPTS
 	 do
 	 	echo "you chose ($REPLY)$opt"
@@ -194,6 +194,7 @@ interactive () {
 			"clear")
 				echo "$REPLY) clear the already existing problems"
 				clear_env
+				HOST="(no host currently selected)"
 				;;
 	 		"help")
 	 			;;
@@ -239,7 +240,7 @@ interactive () {
 #			 ;;
 #	esac
 # done
-if [[ $(ls -d environments/*/) ]]
+if [[ $(ls -d environments/*/ 2> /dev/null) ]]
 then
 	select opt in $(ls environments/*/ -d 2> /dev/null)
 	do
