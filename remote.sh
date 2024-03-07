@@ -12,6 +12,7 @@ DEBUG=false
 FUNC_EXEC=true
 CCOUNT=true
 let count=1
+TOTAL=$(ls environments/*/ -d 2> /dev/null | wc -l)
 transfer_credentials() {
 	address="${!CURRENT_ADDRESS}"
 	if [[ -f $PUBKEY ]]
@@ -55,6 +56,34 @@ setup_host() {
 		#echo $varfile:$script
 	done
 }
+setup_hostnames(){
+	address="${!CURRENT_ADDRESS}"
+	ssh -i $PRIKEY "$USER@${!CURRENT_ADDRESS}" "hostnamectl set-hostname  \"${!CURRENT_HOSTNAME}\""
+	for num in $(seq 1 $TOTAL)
+	do
+		host="HOST_$num"
+		#echo "${!host}"
+	ssh -i $PRIKEY "$USER@${!CURRENT_ADDRESS}" "echo \"${!host}\" >> /etc/hosts"
+	done
+}
+setup_ssh(){
+#	host_num=$count
+	address="ADDRESS_$count"
+	address=${!address}
+	scp -i $PRIKEY $PRIKEY $USER@$address:~/.ssh/
+	for host in $(seq 1 $TOTAL | tr "$count" " ")
+	do
+		set_current_host $host
+		host_string="
+Host ${!CURRENT_HOSTNAME}
+	HostName ${!CURRENT_ADDRESS}
+	User $USER
+	StrictHostKeyChecking no
+	IdentityFile ~/.ssh/${PRIKEY##*/}
+	"
+	ssh -i $PRIKEY $USER@$address "echo \"$host_string\" >> ~/.ssh/config"
+done
+}
 grade_host() {
 	number="$count"
 	address="${!CURRENT_ADDRESS}"
@@ -78,9 +107,28 @@ help_func() {
 	echo "-c		the number of the server you want to setup"
 	echo "-v		verbose, is still in implementation"
 	echo "-f		file.sh to execute on a selected server"
+	echo "-j		set hostnames for each of the servers"
+	echo "-J		used with -c to make the selected server a jump host"
 	echo "-h		print the usage/help text, like this"
 }
-while getopts "tsf:ghvc:" opt
+set_current_host() {
+	count=$1
+	CURRENT_HOSTNAME="HOSTNAME_$count"
+	CURRENT_HOST="HOST_$count"
+	CURRENT_ADDRESS="ADDRESS_$count"
+}
+check_CCOUNT() {
+	for i in $@
+	do
+		if [[ $i == '-c' ]]
+		then
+			return
+		fi
+	done
+	echo "host not specified, please use -c num to specify which host"
+	exit 1
+}
+while getopts "tsf:ghvc:jJ" opt
 do
 	case $opt in
 		t)
@@ -115,6 +163,14 @@ do
 
 			help_func
 			;;
+		j)
+			#check_CCOUNT $@
+			opt_func=setup_hostnames
+			;;
+		J)
+			check_CCOUNT $@
+			opt_func=setup_ssh 
+			;;
 		*)
 			help_func
 			exit 1
@@ -132,7 +188,9 @@ do
 	#setup_host $count ${!CURRENT_ADDRESS}
 	$opt_func
 	[[ $CCOUNT=="true" ]] && ((count++))
-	CURRENT_HOSTNAME="HOSTNAME_$count"
-	CURRENT_HOST="HOST_$count"
-	CURRENT_ADDRESS="ADDRESS_$count"
+	echo count=$count
+	set_current_host $count
+#	CURRENT_HOSTNAME="HOSTNAME_$count"
+#	CURRENT_HOST="HOST_$count"
+#	CURRENT_ADDRESS="ADDRESS_$count"
 done
