@@ -30,15 +30,12 @@ transfer_credentials() {
 	fi
 }
 execute_script() {
-	filename=$1
+	filename=${1##*/}
 	address=$2
-	directory=${filename%/*}
+	directory=${1%/*}
 	directory=${directory##*/}
-	filename=${filename##*/}
-	filename=${filename%.*}
-	varfile="environments/server_$count/$directory/$filename.vars"
-	scriptfile="$directory/$filename.sh"
-	#echo -e "directory: $directory\nfilename: $filename\nvarfile: $varfile\nscriptfile: $scriptfile\n----"
+	varfile="environments/server_$count/$directory/$filename"
+	scriptfile="$directory/${filename%%.*}.sh"
 	cat "$varfile" "$scriptfile" | ssh -i $PRIKEY "$USER@${!CURRENT_ADDRESS}" "bash -s "
 }
 setup_host() {
@@ -88,14 +85,17 @@ grade_host() {
 	number="$count"
 	address="${!CURRENT_ADDRESS}"
 	var_dir="environments/server_$number/problems"
-	echo "grading ${!CURRENT_HOSTNAME}..."
+	echo -e "####\t\tGrading ${!CURRENT_HOSTNAME}...\t\t####"
+	echo "###################################################################################"
 	for varfile in $(ls $var_dir)
 	do
 		#script="problems/${varfile%.*}.sh"
-		echo "executing ${varfile#*/}"
+		echo -e "--------------------------------------------------------------------"
+		echo -e "##\tExecuting ${varfile#*/}\t##"
 		[[ $DEBUG == "true" ]] && read -p "press enter to continue executing $script... " empy
 		#cat "$var_dir/$varfile" "$script" | ssh -i $PRIKEY $USER@$address "bash -s "
 		execute_script "$var_dir/$varfile"
+		echo ""
 	done
 }
 help_func() {
@@ -188,7 +188,7 @@ do
 	#setup_host $count ${!CURRENT_ADDRESS}
 	$opt_func
 	[[ $CCOUNT=="true" ]] && ((count++))
-	echo count=$count
+#	echo count=$count
 	set_current_host $count
 #	CURRENT_HOSTNAME="HOSTNAME_$count"
 #	CURRENT_HOST="HOST_$count"

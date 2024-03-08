@@ -4,13 +4,17 @@
 PROBLEMS=()
 DEF_HOST="(no host selected)"
 HOST="(no host selected)"
+HOST="environments/server_1/"
 get_vars () {
 	location="$1/$2"
 	IFS=$'\n' vars=($(awk '/#-/{flag=!flag; next} flag' $location))
 	DESC="$(awk '/DESC="/{flag=1;next} /"/ {flag=0} flag' $location)"
 #	filename="$(awk -F/ '{print $NF}' <<< $1)"
 #	filename="${filename%.*}.vars"
-	filename="${2%.*}.vars"
+	filename="${2%.*}"
+	var_count=$(ls $HOST/$1/$filename* 2> /dev/null| wc -l)
+	echo $var_count
+	filename="${2%.*}.vars.$var_count"
 	echo "#This is an automatically created file, modification may cause an error and are not persistent." > $HOST/$1/$filename
 	echo "$DESC"
 	#echo "vars: ${vars[@]}"
@@ -240,6 +244,7 @@ interactive () {
 #			 ;;
 #	esac
 # done
+
 if [[ $(ls -d environments/*/ 2> /dev/null) ]]
 then
 	select opt in $(ls environments/*/ -d 2> /dev/null)
