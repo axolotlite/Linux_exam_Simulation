@@ -6,6 +6,7 @@ CURRENT_HOSTNAME="HOSTNAME_1"
 CURRENT_HOST="HOST_1"
 CURRENT_ADDRESS="ADDRESS_1"
 USER="root"
+#USER="ubuntu_user"
 PUBKEY="credentials/utility.pub"
 PRIKEY="credentials/utility"
 DEBUG=false
@@ -15,10 +16,10 @@ let count=1
 TOTAL=$(ls environments/*/ -d 2> /dev/null | wc -l)
 transfer_credentials() {
 	address="${!CURRENT_ADDRESS}"
-	if [[ -f $PUBKEY ]]
+	if [[ ! -f $PUBKEY ]]
 	then
 		cd credentials
-		./generate_keys/.sh
+		./generate_keys.sh
 		cd ..
 	fi
 	echo "Transferring public ssh-key for user $USER at $address..."
@@ -148,6 +149,7 @@ do
 				echo "The selected Server doesn't exist, please choose a server between 1 and $servers"
 				exit 1
 			fi
+			set_current_host $count
 			CCOUNT=false
 			;;
 		v)
@@ -156,6 +158,7 @@ do
 		f)
 
 			script=${OPTARG}
+			echo "executing $script..."
 			execute_script "$script"
 			FUNC_EXEC=false
 			;;
