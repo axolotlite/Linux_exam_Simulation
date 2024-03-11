@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>k8s_worker</short>
+  <description>A k8s worker node is a node that runs the application in a cluster and reports to a control plane. The main responsibilities of a worker node is to process data stored in the cluster and handle networking to ensure traffic between the application across the cluster and outside of the cluster are properly facilitated.</description>
+  <port protocol="tcp" port="10250"/>
+  <port protocol="tcp" port="10251"/>
+  <port protocol="tcp" port="10255"/>
+  <port protocol="udp" port="8472"/>
+  <port protocol="tcp" port="30000-32767"/>
+</service>

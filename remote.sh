@@ -6,7 +6,6 @@ CURRENT_HOSTNAME="HOSTNAME_1"
 CURRENT_HOST="HOST_1"
 CURRENT_ADDRESS="ADDRESS_1"
 USER="root"
-#USER="ubuntu_user"
 PUBKEY="credentials/utility.pub"
 PRIKEY="credentials/utility"
 DEBUG=false
@@ -24,6 +23,9 @@ transfer_credentials() {
 	fi
 	echo "Transferring public ssh-key for user $USER at $address..."
 	ssh-copy-id -i $PUBKEY -f $USER@$address
+	### This is insecure, but its efficient.
+	ssh -i $PRIKEY $USER@$address "mkdir /etc/skel/.ssh &> /dev/null"
+	scp -i $PRIKEY $USER@$address:~/.ssh/authorized_keys $USER@$address:/etc/skel/.ssh/authorized_keys
 	if [[ $(ls credentials/certs/* &> /dev/null) ]]
 	then
 		scp -i $PRIKEY credentials/certs/* $USER@$address:/etc/pki/ca-trust/source/anchors/
@@ -31,13 +33,23 @@ transfer_credentials() {
 	fi
 }
 execute_script() {
+	opt=""
 	filename=${1##*/}
 	address=$2
 	directory=${1%/*}
 	directory=${directory##*/}
 	varfile="environments/server_$count/$directory/$filename"
 	scriptfile="$directory/${filename%%.*}.sh"
-	cat "$varfile" "$scriptfile" | ssh -i $PRIKEY "$USER@${!CURRENT_ADDRESS}" "bash -s "
+	IFS='=$' read -r a b <<< $(grep "FORK=" $varfile)
+  	[[ "${b: -1}" == "\"" ]] && b=${b::-1}
+  	[[ "${b::1}" == "\"" ]] && b=${b:1}
+	if [[ "$b" == "true" ]]
+	then
+		echo "forking script to run in the background!"
+		(cat "$varfile" "$scriptfile" | ssh -i $PRIKEY "$USER@${!CURRENT_ADDRESS}" "bash -s ") &
+	else
+		cat "$varfile" "$scriptfile" | ssh -i $PRIKEY "$USER@${!CURRENT_ADDRESS}" "bash -s "
+	fi
 }
 setup_host() {
 	number="$count"
@@ -64,8 +76,12 @@ setup_hostnames(){
 	ssh -i $PRIKEY "$USER@${!CURRENT_ADDRESS}" "echo \"${!host}\" >> /etc/hosts"
 	done
 }
+create_user(){
+	ssh -i $PRIKEY root@${!CURRENT_ADDRESS} "id $USER &> /dev/null || useradd $USER "
+}
 setup_ssh(){
 #	host_num=$count
+	echo $USER is going to fucking kill me
 	address="ADDRESS_$count"
 	address=${!address}
 	scp -i $PRIKEY $PRIKEY $USER@$address:~/.ssh/
@@ -75,11 +91,10 @@ setup_ssh(){
 		host_string="
 Host ${!CURRENT_HOSTNAME}
 	HostName ${!CURRENT_ADDRESS}
-	User $USER
 	StrictHostKeyChecking no
 	IdentityFile ~/.ssh/${PRIKEY##*/}
 	"
-	ssh -i $PRIKEY $USER@$address "echo \"$host_string\" >> ~/.ssh/config"
+	ssh -i $PRIKEY $USER@$address "echo \"$host_string\" >> /etc/ssh/ssh_config.d/exam.conf"
 done
 }
 grade_host() {
@@ -99,6 +114,11 @@ grade_host() {
 		echo ""
 	done
 }
+move_files(){
+	src=$1
+	ssh -i $PRIKEY $USER@${!CURRENT_ADDRESS} 'mkdir ~/.files/' &> /dev/null
+	scp -i $PRIKEY -r $src $USER@${!CURRENT_ADDRESS}:~/.files/
+}
 help_func() {
 	echo "This is the script responsible for executing the script on the remote hosts, these are the parameters"
 	echo ""
@@ -110,6 +130,8 @@ help_func() {
 	echo "-f		file.sh to execute on a selected server"
 	echo "-j		set hostnames for each of the servers"
 	echo "-J		used with -c to make the selected server a jump host"
+	echo "-m		move files, from source to destination on another host. -m directory host_number"
+	echo "-u		user to run the command as, if the user doesn't exist, it'll be created"
 	echo "-h		print the usage/help text, like this"
 }
 set_current_host() {
@@ -129,7 +151,8 @@ check_CCOUNT() {
 	echo "host not specified, please use -c num to specify which host"
 	exit 1
 }
-while getopts "tsf:ghvc:jJ" opt
+
+while getopts "tsf:ghvc:jJm:u:" opt
 do
 	case $opt in
 		t)
@@ -159,12 +182,14 @@ do
 
 			script=${OPTARG}
 			echo "executing $script..."
-			execute_script "$script"
-			FUNC_EXEC=false
+			opt_func="execute_script $script"
+			CCOUNT=false
+			#FUNC_EXEC=false
 			;;
 		h)
 
 			help_func
+			exit 0
 			;;
 		j)
 			#check_CCOUNT $@
@@ -174,6 +199,15 @@ do
 			check_CCOUNT $@
 			opt_func=setup_ssh 
 			;;
+		m)
+			check_CCOUNT $@
+			dir="${OPTARG}"
+			opt_func="move_files $dir"
+			;;
+		u)
+			USER=${OPTARG}
+			create_user
+			;;
 		*)
 			help_func
 			exit 1
@@ -182,7 +216,11 @@ do
 
 
 done
-while [[ -n ${!CURRENT_HOSTNAME} ]] && [[ $FUNC_EXEC == "true" ]]
+#do while because for some reason, CCOUNT is always true inside the loop.
+$opt_func
+((count++))
+set_current_host $count
+while [[ -n ${!CURRENT_HOSTNAME} ]] && [[ $CCOUNT == "true" ]]
 do
 #	echo "$CURRENT_HOSTNAME:${!CURRENT_HOSTNAME}"
 #	echo "$CURRENT_ADDRESS:${!CURRENT_ADDRESS}"
@@ -190,7 +228,7 @@ do
 	#transfer_credentials ${!CURRENT_ADDRESS}
 	#setup_host $count ${!CURRENT_ADDRESS}
 	$opt_func
-	[[ $CCOUNT=="true" ]] && ((count++))
+	((count++))
 #	echo count=$count
 	set_current_host $count
 #	CURRENT_HOSTNAME="HOSTNAME_$count"
